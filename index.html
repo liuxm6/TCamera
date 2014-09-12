@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>拍照测试</title>
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="swfobject.js"></script>
+<script type="text/javascript">
+	var flashvars = {};  
+    var params = {wmode: "transparent",allowScriptAccess:"always"}; 
+    var attributes = {};
+	
+	var name = "刘小明";
+	var sfz ="620521198906033735";
+
+    swfobject.embedSWF("TCamera.swf?name="+name+"&sfz="+sfz, "cam", "320", "280", "10.0.0", "expressInstall.swf", flashvars, params, attributes);
+	
+	function takePhone(){
+		var respose = document.getElementById("cam").takePhone();
+		if(respose[0]=="True"){
+			var base64 = respose[1];
+			$("#imgdiv").setImage(base64);
+		}
+		else{
+			$("#imgdiv").setMessage(respose[1],"error");
+		}
+	}
+	function cancelTakePhone(){
+		//parent.$.modal.close();
+	}
+	(function($) {
+		$.fn.extend({
+			setMessage: function(mess,status) {
+				if(status.length == 0){
+					status = 'mess';
+				}
+				var html = '<div class="messdiv '+status+'">'+mess+'</div>';
+				$(this).html(html);
+			},
+			setImage: function(base64) {
+				var src = "data:image/jpeg;base64,"+base64;
+				var html = '<img src="'+src+'" alt="照片">';
+				$(this).html(html);
+			},
+			setImageBase64: function(base64) {
+				$(this).val(base64);
+			},
+			saveImage: function(uid,base64) {
+				$.ajax({
+					 type: "POST",
+					 url: Drupal.settings.basePath+"admin/tphone/js",
+					 dataType:'json',
+					 data: {
+						'uid':uid,
+						'base64':encodeURIComponent(base64)
+					 },
+					 timeout:5000,
+					 success:function(respose){
+						if(respose.result){
+							$("#imgdiv").setMessage("照片保存成功。");
+							//parent.$.modal.close();
+						}
+						else{
+							$("#imgdiv").setMessage("照片保存失败！","error");
+							//parent.$.modal.close();
+						}
+					 },
+					 error:function(XMLHttpRequest, textStatus, errorThrown){
+						$("#imgdiv").setMessage("照片保存失败！"+textStatus+":"+errorThrown,"error");
+						//parent.$.modal.close();
+					 }
+				});
+			}
+		});
+	})(jQuery);
+</script>
+<style>
+	.messdiv{
+		text-align:center;
+		margin-top: 100px;
+	}
+	.mess{
+		color:#10D618;
+	}
+	.error{
+		color:red;
+	}
+</style>
+</head>
+<body>
+	<div style="width:665px;height:280px;margin:0 auto;">
+		<div id="camdiv" style="float:left;width:320px;height:280px;border:1px #ccc solid;">
+			<span id="cam"></span>
+		</div>
+		<div id="imgdiv" style="float:left;width:320px;height:280px;margin-left:20px; border:1px #ccc solid;">
+			
+		</div>
+	</div>
+	<div style="text-align:center;clear:both;margin-top:20px;">
+		<input onclick="takePhone();" type="submit" name="pz" value="拍照">
+		<input onclick="cancelTakePhone();" type="submit" name="tg" value="跳过拍照">
+		<span style="color:red;">"跳过拍照"会对您的学习真实性产生影响！</span>
+	</div>
+</body>
+</html>
